@@ -1,3 +1,62 @@
 spring:
   application:
     name: spring-boot-auth-server
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5433/spring-boot-auth-server}
+    username: ${DATASOURCE_USERNAME:spring-boot-auth-server}
+    password: ${DATASOURCE_PASSWORD:spring-boot-auth-server}
+  flyway:
+    enabled: true
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: never
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: ${ISSUER_URI:http://localhost:9000}
+
+server:
+  port: 9000
+
+oauth:
+  client:
+    registrations:
+      web-bff:
+        client-id: "spring-boot-web-bff"
+        client-secret: "{noop}spring-boot-web-bff-auth-server-secret"
+        redirect-uris:
+          - "http://localhost:8080/login/oauth2/code/auth-server"
+          - "http://spring-boot-web-bff:8080/login/oauth2/code/auth-server"
+        post-logout-redirect-uris:
+          - "http://localhost:4200/"
+        scopes:
+          - "openid"
+          - "profile"
+          - "email"
+        access-token-time-to-live: 5m
+        refresh-token-time-to-live: 24h
+        authorization-code-time-to-live: 5m
+        require-proof-key: true
+        require-authorization-consent: false
+      mobile-bff:
+        client-id: "spring-boot-mobile-bff"
+        client-secret: "{noop}spring-boot-mobile-bff-auth-server-secret"
+        redirect-uris:
+          - "http://localhost:8082/login/oauth2/code/auth-server"
+          - "http://spring-boot-mobile-bff:8082/login/oauth2/code/auth-server"
+        post-logout-redirect-uris:
+          - "myapp:/"
+        scopes:
+          - "openid"
+          - "profile"
+          - "email"
+        access-token-time-to-live: 5m
+        refresh-token-time-to-live: 24h
+        authorization-code-time-to-live: 5m
+        require-proof-key: true
+        require-authorization-consent: false
+#logging:
+#  level:
+#    org.springframework.security.oauth2: trace
+#    root: debug

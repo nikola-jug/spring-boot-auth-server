@@ -1,0 +1,32 @@
+include:
+  - docker-compose-database.yaml
+services:
+  spring-boot-auth-server:
+    build: .
+    container_name: spring-boot-auth-server
+    depends_on:
+      spring-boot-auth-server-db:
+        condition: service_healthy
+    ports:
+      - '9000:9000'
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://spring-boot-auth-server-db:5432/spring-boot-auth-server
+      DATASOURCE_USERNAME: spring-boot-auth-server
+      DATASOURCE_PASSWORD: spring-boot-auth-server
+      ISSUER_URI: http://spring-boot-auth-server:9000
+    networks:
+      identity-net:
+        ipv4_address: 10.5.0.12
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://spring-boot-auth-server:9000/actuator/health" ]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+networks:
+  identity-net:
+    name: identity-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

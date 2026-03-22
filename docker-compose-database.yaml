@@ -1,0 +1,30 @@
+services:
+  spring-boot-auth-server-db:
+    image: postgres:16
+    container_name: spring-boot-auth-server-db
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_PASSWORD: spring-boot-auth-server
+      POSTGRES_USER: spring-boot-auth-server
+      POSTGRES_DB: spring-boot-auth-server
+    networks:
+      identity-net:
+        ipv4_address: 10.5.0.14
+    volumes:
+      - spring-boot-auth-server-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+networks:
+  identity-net:
+    name: identity-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
+volumes:
+  spring-boot-auth-server-db-volume: {}
