@@ -1,5 +1,10 @@
 package io.tacta.springbootauthserver.config;
 
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +21,11 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.util.UUID;
 
 @Configuration
@@ -65,5 +75,41 @@ public class AuthorizationServerConfiguration {
     public OAuth2AuthorizationConsentService authorizationConsentService(JdbcTemplate jdbcTemplate,
                                                                          RegisteredClientRepository registeredClientRepository) {
         return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
+    }
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(JdbcTemplate jdbcTemplate) {
+        final String KEY_ID = "rsa-key-1";
+
+        String existing = jdbcTemplate.query(
+                "SELECT jwk_json FROM oauth2_jwk WHERE key_id = ?",
+                rs -> rs.next() ? rs.getString("jwk_json") : null,
+                KEY_ID);
+
+        RSAKey rsaKey;
+        if (existing != null) {
+            try {
+                rsaKey = RSAKey.parse(existing);
+            } catch (ParseException e) {
+                throw new IllegalStateException("Failed to parse persisted RSA JWK", e);
+            }
+        } else {
+            try {
+                KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+                generator.initialize(2048);
+                KeyPair keyPair = generator.generateKeyPair();
+                rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                        .privateKey((RSAPrivateKey) keyPair.getPrivate())
+                        .keyID(KEY_ID)
+                        .build();
+                jdbcTemplate.update(
+                        "INSERT INTO oauth2_jwk (key_id, jwk_json) VALUES (?, ?)",
+                        KEY_ID, rsaKey.toJSONString());
+            } catch (java.security.NoSuchAlgorithmException e) {
+                throw new IllegalStateException("RSA algorithm unavailable", e);
+            }
+        }
+
+        return new ImmutableJWKSet<>(new JWKSet(rsaKey));
     }
 }
