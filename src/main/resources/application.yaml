@@ -29,8 +29,8 @@ oauth:
         client-id: "spring-boot-web-bff"
         client-secret: "${WEB_BFF_CLIENT_SECRET}"
         redirect-uris:
-          - "https://localhost:8080/login/oauth2/code/auth-server"
-          - "https://spring-boot-web-bff:8080/login/oauth2/code/auth-server"
+          - "https://localhost/login/oauth2/code/auth-server"
+          - "https://angular-ui-web/login/oauth2/code/auth-server"
         post-logout-redirect-uris:
           - "https://localhost/"
           - "https://angular-ui-web/"
