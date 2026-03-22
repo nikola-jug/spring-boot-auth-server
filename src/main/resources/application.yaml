@@ -39,7 +39,7 @@ oauth:
           - "profile"
           - "email"
         access-token-time-to-live: 5m
-        refresh-token-time-to-live: 24h
+        refresh-token-time-to-live: 30m
         authorization-code-time-to-live: 5m
         require-proof-key: true
         require-authorization-consent: false
@@ -50,13 +50,13 @@ oauth:
           - "https://localhost:8082/login/oauth2/code/auth-server"
           - "https://spring-boot-mobile-bff:8082/login/oauth2/code/auth-server"
         post-logout-redirect-uris:
-          - "myapp:/"
+          - "myapp://callback"
         scopes:
           - "openid"
           - "profile"
           - "email"
         access-token-time-to-live: 5m
-        refresh-token-time-to-live: 24h
+        refresh-token-time-to-live: 30m
         authorization-code-time-to-live: 5m
         require-proof-key: true
         require-authorization-consent: false
