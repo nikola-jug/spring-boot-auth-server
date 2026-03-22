@@ -14,22 +14,26 @@ spring:
   security:
     oauth2:
       authorizationserver:
-        issuer: ${ISSUER_URI:http://localhost:9000}
+        issuer: ${AUTH_SERVER_ISSUER_URI:https://spring-boot-auth-server:9000}
 
 server:
   port: 9000
+  ssl:
+    certificate: "file:/certs/cert.pem"
+    certificate-private-key: "file:/certs/key.pem"
 
 oauth:
   client:
     registrations:
       web-bff:
         client-id: "spring-boot-web-bff"
-        client-secret: "{noop}spring-boot-web-bff-auth-server-secret"
+        client-secret: "${WEB_BFF_CLIENT_SECRET}"
         redirect-uris:
-          - "http://localhost:8080/login/oauth2/code/auth-server"
-          - "http://spring-boot-web-bff:8080/login/oauth2/code/auth-server"
+          - "https://localhost:8080/login/oauth2/code/auth-server"
+          - "https://spring-boot-web-bff:8080/login/oauth2/code/auth-server"
         post-logout-redirect-uris:
-          - "http://localhost:4200/"
+          - "https://localhost/"
+          - "https://angular-ui-web/"
         scopes:
           - "openid"
           - "profile"
@@ -41,10 +45,10 @@ oauth:
         require-authorization-consent: false
       mobile-bff:
         client-id: "spring-boot-mobile-bff"
-        client-secret: "{noop}spring-boot-mobile-bff-auth-server-secret"
+        client-secret: "${MOBILE_BFF_CLIENT_SECRET}"
         redirect-uris:
-          - "http://localhost:8082/login/oauth2/code/auth-server"
-          - "http://spring-boot-mobile-bff:8082/login/oauth2/code/auth-server"
+          - "https://localhost:8082/login/oauth2/code/auth-server"
+          - "https://spring-boot-mobile-bff:8082/login/oauth2/code/auth-server"
         post-logout-redirect-uris:
           - "myapp:/"
         scopes:
@@ -56,7 +60,3 @@ oauth:
         authorization-code-time-to-live: 5m
         require-proof-key: true
         require-authorization-consent: false
-#logging:
-#  level:
-#    org.springframework.security.oauth2: trace
-#    root: debug

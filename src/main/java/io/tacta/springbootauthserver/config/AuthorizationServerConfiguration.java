@@ -28,28 +28,28 @@ public class AuthorizationServerConfiguration {
         JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
 
         properties.getRegistrations().values().forEach(reg -> {
-            if (repository.findByClientId(reg.getClientId()) == null) {
-                RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
-                        .clientId(reg.getClientId())
-                        .clientSecret(reg.getClientSecret())
-                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                        .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                        .redirectUris(uris -> uris.addAll(reg.getRedirectUris()))
-                        .postLogoutRedirectUris(uris -> uris.addAll(reg.getPostLogoutRedirectUris()))
-                        .scopes(scopes -> scopes.addAll(reg.getScopes()))
-                        .clientSettings(ClientSettings.builder()
-                                .requireProofKey(reg.isRequireProofKey())
-                                .requireAuthorizationConsent(reg.isRequireAuthorizationConsent())
-                                .build())
-                        .tokenSettings(TokenSettings.builder()
-                                .accessTokenTimeToLive(reg.getAccessTokenTimeToLive())
-                                .refreshTokenTimeToLive(reg.getRefreshTokenTimeToLive())
-                                .authorizationCodeTimeToLive(reg.getAuthorizationCodeTimeToLive())
-                                .build())
-                        .build();
-                repository.save(client);
-            }
+            RegisteredClient existing = repository.findByClientId(reg.getClientId());
+            String id = existing != null ? existing.getId() : UUID.randomUUID().toString();
+            RegisteredClient client = RegisteredClient.withId(id)
+                    .clientId(reg.getClientId())
+                    .clientSecret(reg.getClientSecret())
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                    .redirectUris(uris -> uris.addAll(reg.getRedirectUris()))
+                    .postLogoutRedirectUris(uris -> uris.addAll(reg.getPostLogoutRedirectUris()))
+                    .scopes(scopes -> scopes.addAll(reg.getScopes()))
+                    .clientSettings(ClientSettings.builder()
+                            .requireProofKey(reg.isRequireProofKey())
+                            .requireAuthorizationConsent(reg.isRequireAuthorizationConsent())
+                            .build())
+                    .tokenSettings(TokenSettings.builder()
+                            .accessTokenTimeToLive(reg.getAccessTokenTimeToLive())
+                            .refreshTokenTimeToLive(reg.getRefreshTokenTimeToLive())
+                            .authorizationCodeTimeToLive(reg.getAuthorizationCodeTimeToLive())
+                            .build())
+                    .build();
+            repository.save(client);
         });
 
         return repository;
